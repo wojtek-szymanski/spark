@@ -17,6 +17,8 @@
 
 package org.apache.spark.ml.tuning
 
+import scala.language.postfixOps
+
 import org.apache.spark.SparkFunSuite
 import org.apache.spark.ml.{Estimator, Model, Pipeline}
 import org.apache.spark.ml.classification.{LogisticRegression, LogisticRegressionModel}
@@ -172,7 +174,7 @@ class CrossValidatorSuite
       .setEstimatorParamMaps(lrParamMaps)
 
     val hashingTF = new HashingTF()
-    val pipeline = new Pipeline().setStages(Array(hashingTF, lrcv))
+    val pipeline = hashingTF + lrcv
     val paramMaps = new ParamGridBuilder()
       .addGrid(hashingTF.numFeatures, Array(10, 20))
       .addGrid(lr.elasticNetParam, Array(0.0, 1.0))

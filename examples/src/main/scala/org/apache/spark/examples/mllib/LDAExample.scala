@@ -18,11 +18,12 @@
 // scalastyle:off println
 package org.apache.spark.examples.mllib
 
+import scala.language.postfixOps
+
 import org.apache.log4j.{Level, Logger}
 import scopt.OptionParser
 
 import org.apache.spark.{SparkConf, SparkContext}
-import org.apache.spark.ml.Pipeline
 import org.apache.spark.ml.feature.{CountVectorizer, CountVectorizerModel, RegexTokenizer, StopWordsRemover}
 import org.apache.spark.ml.linalg.{Vector => MLVector}
 import org.apache.spark.mllib.clustering.{DistributedLDAModel, EMLDAOptimizer, LDA, OnlineLDAOptimizer}
@@ -208,17 +209,18 @@ object LDAExample {
     val tokenizer = new RegexTokenizer()
       .setInputCol("docs")
       .setOutputCol("rawTokens")
+
     val stopWordsRemover = new StopWordsRemover()
       .setInputCol("rawTokens")
       .setOutputCol("tokens")
     stopWordsRemover.setStopWords(stopWordsRemover.getStopWords ++ customizedStopWords)
+
     val countVectorizer = new CountVectorizer()
       .setVocabSize(vocabSize)
       .setInputCol("tokens")
       .setOutputCol("features")
 
-    val pipeline = new Pipeline()
-      .setStages(Array(tokenizer, stopWordsRemover, countVectorizer))
+    val pipeline = tokenizer + stopWordsRemover + countVectorizer
 
     val model = pipeline.fit(df)
     val documents = model.transform(df)

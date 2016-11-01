@@ -19,7 +19,9 @@
 package org.apache.spark.examples.ml
 
 // $example on$
-import org.apache.spark.ml.{Pipeline, PipelineModel}
+import scala.language.postfixOps
+
+import org.apache.spark.ml.PipelineModel
 import org.apache.spark.ml.classification.LogisticRegression
 import org.apache.spark.ml.feature.{HashingTF, Tokenizer}
 import org.apache.spark.ml.linalg.Vector
@@ -48,15 +50,17 @@ object PipelineExample {
     val tokenizer = new Tokenizer()
       .setInputCol("text")
       .setOutputCol("words")
+
     val hashingTF = new HashingTF()
       .setNumFeatures(1000)
       .setInputCol(tokenizer.getOutputCol)
       .setOutputCol("features")
+
     val lr = new LogisticRegression()
       .setMaxIter(10)
       .setRegParam(0.001)
-    val pipeline = new Pipeline()
-      .setStages(Array(tokenizer, hashingTF, lr))
+
+    val pipeline = tokenizer + hashingTF + lr
 
     // Fit the pipeline to training documents.
     val model = pipeline.fit(training)

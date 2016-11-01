@@ -21,6 +21,7 @@ import java.{util => ju}
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
+import scala.language.postfixOps
 
 import org.apache.hadoop.fs.Path
 import org.json4s._
@@ -75,6 +76,12 @@ abstract class PipelineStage extends Params with Logging {
   }
 
   override def copy(extra: ParamMap): PipelineStage
+
+  @Since("2.1.0")
+  def add(stage: PipelineStage): Pipeline = new Pipeline().setStages(Array(this, stage))
+
+  @Since("2.1.0")
+  def +(stage: PipelineStage): Pipeline = add(stage)
 }
 
 /**
@@ -182,6 +189,12 @@ class Pipeline @Since("1.4.0") (
 
   @Since("1.6.0")
   override def write: MLWriter = new Pipeline.PipelineWriter(this)
+
+  @Since("2.1.0")
+  override def add(stage: PipelineStage): Pipeline = {
+    val newStages = if (isDefined(stages)) getStages :+ stage else Array(stage)
+    new Pipeline(uid).setStages(newStages)
+  }
 }
 
 @Since("1.6.0")

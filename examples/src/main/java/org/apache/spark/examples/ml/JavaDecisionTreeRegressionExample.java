@@ -19,7 +19,6 @@ package org.apache.spark.examples.ml;
 // $example on$
 import org.apache.spark.ml.Pipeline;
 import org.apache.spark.ml.PipelineModel;
-import org.apache.spark.ml.PipelineStage;
 import org.apache.spark.ml.evaluation.RegressionEvaluator;
 import org.apache.spark.ml.feature.VectorIndexer;
 import org.apache.spark.ml.feature.VectorIndexerModel;
@@ -59,8 +58,7 @@ public class JavaDecisionTreeRegressionExample {
       .setFeaturesCol("indexedFeatures");
 
     // Chain indexer and tree in a Pipeline.
-    Pipeline pipeline = new Pipeline()
-      .setStages(new PipelineStage[]{featureIndexer, dt});
+    Pipeline pipeline = featureIndexer.add(dt);
 
     // Train model. This also runs the indexer.
     PipelineModel model = pipeline.fit(trainingData);

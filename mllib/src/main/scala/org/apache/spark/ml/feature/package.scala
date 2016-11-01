@@ -40,8 +40,8 @@ import org.apache.spark.sql.DataFrame
  * combine multiple feature transformations, for example:
  *
  * {{{
+ *   import scala.language.postfixOps
  *   import org.apache.spark.ml.feature._
- *   import org.apache.spark.ml.Pipeline
  *
  *   // a DataFrame with three columns: id (integer), text (string), and rating (double).
  *   val df = spark.createDataFrame(Seq(
@@ -69,8 +69,7 @@ import org.apache.spark.sql.DataFrame
  *     .setOutputCol("features")
  *
  *   // assemble and fit the feature transformation pipeline
- *   val pipeline = new Pipeline()
- *     .setStages(Array(tok, sw, tf, idf, assembler))
+ *   val pipeline = tok + sw + tf + idf + assembler
  *   val model = pipeline.fit(df)
  *
  *   // save transformed features with raw data

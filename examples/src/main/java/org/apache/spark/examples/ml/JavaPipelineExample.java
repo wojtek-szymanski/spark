@@ -22,7 +22,6 @@ import java.util.Arrays;
 
 import org.apache.spark.ml.Pipeline;
 import org.apache.spark.ml.PipelineModel;
-import org.apache.spark.ml.PipelineStage;
 import org.apache.spark.ml.classification.LogisticRegression;
 import org.apache.spark.ml.feature.HashingTF;
 import org.apache.spark.ml.feature.Tokenizer;
@@ -54,15 +53,19 @@ public class JavaPipelineExample {
     Tokenizer tokenizer = new Tokenizer()
       .setInputCol("text")
       .setOutputCol("words");
+
     HashingTF hashingTF = new HashingTF()
       .setNumFeatures(1000)
       .setInputCol(tokenizer.getOutputCol())
       .setOutputCol("features");
+
     LogisticRegression lr = new LogisticRegression()
       .setMaxIter(10)
       .setRegParam(0.001);
-    Pipeline pipeline = new Pipeline()
-      .setStages(new PipelineStage[] {tokenizer, hashingTF, lr});
+
+    Pipeline pipeline = tokenizer
+      .add(hashingTF)
+      .add(lr);
 
     // Fit the pipeline to training documents.
     PipelineModel model = pipeline.fit(training);

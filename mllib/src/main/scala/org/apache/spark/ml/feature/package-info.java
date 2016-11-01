@@ -52,7 +52,6 @@
  *
  *   import org.apache.spark.ml.feature.*;
  *   import org.apache.spark.ml.Pipeline;
- *   import org.apache.spark.ml.PipelineStage;
  *   import org.apache.spark.ml.PipelineModel;
  *
  *  // a DataFrame with three columns: id (integer), text (string), and rating (double).
@@ -86,8 +85,11 @@
  *    .setOutputCol("features");
  *
  *  // assemble and fit the feature transformation pipeline
- *  Pipeline pipeline = new Pipeline()
- *    .setStages(new PipelineStage[] {tok, sw, tf, idf, assembler});
+ *  Pipeline pipeline = tok
+ *    .add(sw)
+ *    .add(tf)
+ *    .add(idf)
+ *    .add(assembler);
  *  PipelineModel model = pipeline.fit(dataset);
  *
  *  // save transformed features with raw data

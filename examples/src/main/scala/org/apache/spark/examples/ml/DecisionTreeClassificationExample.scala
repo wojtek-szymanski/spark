@@ -19,7 +19,8 @@
 package org.apache.spark.examples.ml
 
 // $example on$
-import org.apache.spark.ml.Pipeline
+import scala.language.postfixOps
+
 import org.apache.spark.ml.classification.DecisionTreeClassificationModel
 import org.apache.spark.ml.classification.DecisionTreeClassifier
 import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
@@ -65,8 +66,7 @@ object DecisionTreeClassificationExample {
       .setLabels(labelIndexer.labels)
 
     // Chain indexers and tree in a Pipeline.
-    val pipeline = new Pipeline()
-      .setStages(Array(labelIndexer, featureIndexer, dt, labelConverter))
+    val pipeline = labelIndexer + featureIndexer + dt + labelConverter
 
     // Train model. This also runs the indexers.
     val model = pipeline.fit(trainingData)

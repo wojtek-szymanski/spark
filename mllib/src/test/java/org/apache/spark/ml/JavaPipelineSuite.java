@@ -50,11 +50,13 @@ public class JavaPipelineSuite extends SharedSparkSession {
     StandardScaler scaler = new StandardScaler()
       .setInputCol("features")
       .setOutputCol("scaledFeatures");
+
     LogisticRegression lr = new LogisticRegression()
       .setFeaturesCol("scaledFeatures");
-    Pipeline pipeline = new Pipeline()
-      .setStages(new PipelineStage[]{scaler, lr});
+
+    Pipeline pipeline = scaler.add(lr);
     PipelineModel model = pipeline.fit(dataset);
+
     model.transform(dataset).createOrReplaceTempView("prediction");
     Dataset<Row> predictions = spark.sql("SELECT label, probability, prediction FROM prediction");
     predictions.collectAsList();

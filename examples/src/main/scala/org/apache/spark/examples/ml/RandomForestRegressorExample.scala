@@ -19,7 +19,8 @@
 package org.apache.spark.examples.ml
 
 // $example on$
-import org.apache.spark.ml.Pipeline
+import scala.language.postfixOps
+
 import org.apache.spark.ml.evaluation.RegressionEvaluator
 import org.apache.spark.ml.feature.VectorIndexer
 import org.apache.spark.ml.regression.{RandomForestRegressionModel, RandomForestRegressor}
@@ -54,8 +55,7 @@ object RandomForestRegressorExample {
       .setFeaturesCol("indexedFeatures")
 
     // Chain indexer and forest in a Pipeline.
-    val pipeline = new Pipeline()
-      .setStages(Array(featureIndexer, rf))
+    val pipeline = featureIndexer + rf
 
     // Train model. This also runs the indexer.
     val model = pipeline.fit(trainingData)

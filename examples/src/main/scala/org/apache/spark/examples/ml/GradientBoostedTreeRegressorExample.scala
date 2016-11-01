@@ -19,7 +19,8 @@
 package org.apache.spark.examples.ml
 
 // $example on$
-import org.apache.spark.ml.Pipeline
+import scala.language.postfixOps
+
 import org.apache.spark.ml.evaluation.RegressionEvaluator
 import org.apache.spark.ml.feature.VectorIndexer
 import org.apache.spark.ml.regression.{GBTRegressionModel, GBTRegressor}
@@ -55,8 +56,7 @@ object GradientBoostedTreeRegressorExample {
       .setMaxIter(10)
 
     // Chain indexer and GBT in a Pipeline.
-    val pipeline = new Pipeline()
-      .setStages(Array(featureIndexer, gbt))
+    val pipeline = featureIndexer + gbt
 
     // Train model. This also runs the indexer.
     val model = pipeline.fit(trainingData)

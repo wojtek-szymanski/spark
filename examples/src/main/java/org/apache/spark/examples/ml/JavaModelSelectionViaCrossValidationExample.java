@@ -23,7 +23,6 @@ import java.util.Arrays;
 
 // $example on$
 import org.apache.spark.ml.Pipeline;
-import org.apache.spark.ml.PipelineStage;
 import org.apache.spark.ml.classification.LogisticRegression;
 import org.apache.spark.ml.evaluation.BinaryClassificationEvaluator;
 import org.apache.spark.ml.feature.HashingTF;
@@ -68,15 +67,19 @@ public class JavaModelSelectionViaCrossValidationExample {
     Tokenizer tokenizer = new Tokenizer()
       .setInputCol("text")
       .setOutputCol("words");
+
     HashingTF hashingTF = new HashingTF()
       .setNumFeatures(1000)
       .setInputCol(tokenizer.getOutputCol())
       .setOutputCol("features");
+
     LogisticRegression lr = new LogisticRegression()
       .setMaxIter(10)
       .setRegParam(0.01);
-    Pipeline pipeline = new Pipeline()
-      .setStages(new PipelineStage[] {tokenizer, hashingTF, lr});
+
+    Pipeline pipeline = tokenizer
+      .add(hashingTF)
+      .add(lr);
 
     // We use a ParamGridBuilder to construct a grid of parameters to search over.
     // With 3 values for hashingTF.numFeatures and 2 values for lr.regParam,

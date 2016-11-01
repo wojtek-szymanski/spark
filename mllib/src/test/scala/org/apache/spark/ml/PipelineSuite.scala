@@ -18,6 +18,7 @@
 package org.apache.spark.ml
 
 import scala.collection.JavaConverters._
+import scala.language.postfixOps
 
 import org.apache.hadoop.fs.Path
 import org.mockito.Matchers.{any, eq => meq}
@@ -36,6 +37,7 @@ import org.apache.spark.sql.types.StructType
 
 class PipelineSuite extends SparkFunSuite with MLlibTestSparkContext with DefaultReadWriteTest {
 
+  import PipelineSuite._
   import testImplicits._
 
   abstract class MyModel extends Model[MyModel]
@@ -59,6 +61,11 @@ class PipelineSuite extends SparkFunSuite with MLlibTestSparkContext with Defaul
     when(dataset3.toDF).thenReturn(dataset3)
     when(dataset4.toDF).thenReturn(dataset4)
 
+    withRealAdd(estimator0)
+    withRealAdd(transformer1)
+    withRealAdd(estimator2)
+    withRealAdd(transformer3)
+
     when(estimator0.copy(any[ParamMap])).thenReturn(estimator0)
     when(model0.copy(any[ParamMap])).thenReturn(model0)
     when(transformer1.copy(any[ParamMap])).thenReturn(transformer1)
@@ -75,8 +82,7 @@ class PipelineSuite extends SparkFunSuite with MLlibTestSparkContext with Defaul
     when(model2.parent).thenReturn(estimator2)
     when(transformer3.transform(meq(dataset3))).thenReturn(dataset4)
 
-    val pipeline = new Pipeline()
-      .setStages(Array(estimator0, transformer1, estimator2, transformer3))
+    val pipeline = estimator0 + transformer1 + estimator2 + transformer3
     val pipelineModel = pipeline.fit(dataset0)
 
     MLTestingUtils.checkCopy(pipelineModel)
@@ -93,8 +99,8 @@ class PipelineSuite extends SparkFunSuite with MLlibTestSparkContext with Defaul
 
   test("pipeline with duplicate stages") {
     val estimator = mock[Estimator[MyModel]]
-    val pipeline = new Pipeline()
-      .setStages(Array(estimator, estimator))
+    withRealAdd(estimator)
+    val pipeline = estimator + estimator
     val dataset = mock[DataFrame]
     intercept[IllegalArgumentException] {
       pipeline.fit(dataset)
@@ -209,8 +215,40 @@ class PipelineSuite extends SparkFunSuite with MLlibTestSparkContext with Defaul
     val steps = stages0 ++ stages1
     val p = new Pipeline().setStages(steps)
   }
+
+  test("PipelineStage add/+") {
+    val firstStage = withRealAdd(mock[PipelineStage])
+    val nextStage = withRealAdd(mock[PipelineStage])
+    val pipelineAdd = firstStage.add(nextStage)
+    val pipelinePlus = firstStage + nextStage
+
+    assert(pipelineAdd.getStages === pipelinePlus.getStages)
+    assert(pipelineAdd.getStages === Array(firstStage, nextStage))
+  }
+
+  test("Pipeline add/+") {
+    val pipeline = new Pipeline()
+    val firstStage = withRealAdd(mock[PipelineStage])
+    val nextStage = withRealAdd(mock[PipelineStage])
+    val pipelineAdd = pipeline.add(firstStage).add(nextStage)
+    val pipelinePlus = pipeline + firstStage + nextStage
+
+    assert(pipelineAdd.getStages === pipelinePlus.getStages)
+    assert(pipelineAdd.getStages === Array(firstStage, nextStage))
+
+    assert(pipelineAdd.uid === pipelinePlus.uid)
+    assert(pipelineAdd.uid === pipeline.uid)
+  }
 }
 
+private object PipelineSuite {
+
+  def withRealAdd(stage: PipelineStage): PipelineStage = {
+    when(stage.add(any[PipelineStage])).thenCallRealMethod()
+    when(stage + any[PipelineStage]).thenCallRealMethod()
+    stage
+  }
+}
 
 /** Used to test [[Pipeline]] with [[MLWritable]] stages */
 class WritableStage(override val uid: String) extends Transformer with MLWritable {

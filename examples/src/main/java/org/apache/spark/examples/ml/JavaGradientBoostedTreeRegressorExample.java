@@ -20,7 +20,6 @@ package org.apache.spark.examples.ml;
 // $example on$
 import org.apache.spark.ml.Pipeline;
 import org.apache.spark.ml.PipelineModel;
-import org.apache.spark.ml.PipelineStage;
 import org.apache.spark.ml.evaluation.RegressionEvaluator;
 import org.apache.spark.ml.feature.VectorIndexer;
 import org.apache.spark.ml.feature.VectorIndexerModel;
@@ -62,7 +61,7 @@ public class JavaGradientBoostedTreeRegressorExample {
       .setMaxIter(10);
 
     // Chain indexer and GBT in a Pipeline.
-    Pipeline pipeline = new Pipeline().setStages(new PipelineStage[] {featureIndexer, gbt});
+    Pipeline pipeline = featureIndexer.add(gbt);
 
     // Train model. This also runs the indexer.
     PipelineModel model = pipeline.fit(trainingData);

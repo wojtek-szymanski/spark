@@ -19,7 +19,8 @@
 package org.apache.spark.examples.ml
 
 // $example on$
-import org.apache.spark.ml.Pipeline
+import scala.language.postfixOps
+
 import org.apache.spark.ml.classification.LogisticRegression
 import org.apache.spark.ml.evaluation.BinaryClassificationEvaluator
 import org.apache.spark.ml.feature.{HashingTF, Tokenizer}
@@ -67,13 +68,15 @@ object ModelSelectionViaCrossValidationExample {
     val tokenizer = new Tokenizer()
       .setInputCol("text")
       .setOutputCol("words")
+
     val hashingTF = new HashingTF()
       .setInputCol(tokenizer.getOutputCol)
       .setOutputCol("features")
+
     val lr = new LogisticRegression()
       .setMaxIter(10)
-    val pipeline = new Pipeline()
-      .setStages(Array(tokenizer, hashingTF, lr))
+
+    val pipeline = tokenizer + hashingTF + lr
 
     // We use a ParamGridBuilder to construct a grid of parameters to search over.
     // With 3 values for hashingTF.numFeatures and 2 values for lr.regParam,

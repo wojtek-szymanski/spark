@@ -19,7 +19,8 @@
 package org.apache.spark.examples.ml
 
 // $example on$
-import org.apache.spark.ml.Pipeline
+import scala.language.postfixOps
+
 import org.apache.spark.ml.classification.{GBTClassificationModel, GBTClassifier}
 import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
 import org.apache.spark.ml.feature.{IndexToString, StringIndexer, VectorIndexer}
@@ -67,8 +68,7 @@ object GradientBoostedTreeClassifierExample {
       .setLabels(labelIndexer.labels)
 
     // Chain indexers and GBT in a Pipeline.
-    val pipeline = new Pipeline()
-      .setStages(Array(labelIndexer, featureIndexer, gbt, labelConverter))
+    val pipeline = labelIndexer + featureIndexer + gbt + labelConverter
 
     // Train model. This also runs the indexers.
     val model = pipeline.fit(trainingData)

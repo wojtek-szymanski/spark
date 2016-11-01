@@ -18,13 +18,12 @@
 // scalastyle:off println
 package org.apache.spark.examples.ml
 
-import scala.collection.mutable
+import scala.language.postfixOps
 import scala.language.reflectiveCalls
 
 import scopt.OptionParser
 
 import org.apache.spark.examples.mllib.AbstractParams
-import org.apache.spark.ml.{Pipeline, PipelineStage}
 import org.apache.spark.ml.classification.{LogisticRegression, LogisticRegressionModel}
 import org.apache.spark.ml.feature.StringIndexer
 import org.apache.spark.sql.{DataFrame, SparkSession}
@@ -121,13 +120,9 @@ object LogisticRegressionExample {
     val (training: DataFrame, test: DataFrame) = DecisionTreeExample.loadDatasets(params.input,
       params.dataFormat, params.testInput, "classification", params.fracTest)
 
-    // Set up Pipeline.
-    val stages = new mutable.ArrayBuffer[PipelineStage]()
-
     val labelIndexer = new StringIndexer()
       .setInputCol("label")
       .setOutputCol("indexedLabel")
-    stages += labelIndexer
 
     val lor = new LogisticRegression()
       .setFeaturesCol("features")
@@ -138,8 +133,8 @@ object LogisticRegressionExample {
       .setTol(params.tol)
       .setFitIntercept(params.fitIntercept)
 
-    stages += lor
-    val pipeline = new Pipeline().setStages(stages.toArray)
+    // Set up Pipeline
+    val pipeline = labelIndexer + lor
 
     // Fit the Pipeline.
     val startTime = System.nanoTime()
